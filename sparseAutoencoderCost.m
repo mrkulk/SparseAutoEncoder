@@ -49,6 +49,14 @@ Y = zeros(visibleSize,1);
 
 LMS = 0;
 
+%one pass to calculate average sparsity term
+P_avgActivation = zeros(hiddenSize,1);
+for ExampleNum = 1:size(data,2)
+    P_avgActivation = P_avgActivation + sigmoid( W1*data(:,ExampleNum) + b1 );
+end
+P_avgActivation = P_avgActivation / size(data,2);
+   
+
 for ExampleNum = 1:size(data,2)
 
     H = sigmoid( W1*data(:,ExampleNum) + b1 );
@@ -58,7 +66,8 @@ for ExampleNum = 1:size(data,2)
     LMS = LMS + ( power(norm(error),2) / (2) );
         
     deltaYLayer = error .* Y .* (1-Y);
-    deltaHLayer = (transpose(W2) * deltaYLayer) .* H .* (1-H);
+    spTerm = beta.*((-(sparsityParam./P_avgActivation))+((1-sparsityParam)./(1-P_avgActivation)));
+    deltaHLayer = ((transpose(W2) * deltaYLayer) + spTerm) .* H .* (1-H);
     
     W2grad = W2grad + deltaYLayer*transpose(H);
     b2grad = b2grad + deltaYLayer;
@@ -66,8 +75,14 @@ for ExampleNum = 1:size(data,2)
     b1grad = b1grad + deltaHLayer;       
     
 end
- 
-cost = (LMS/size(data,2)) + (lambda*0.5*(sum(sum(W1.*W1))+sum(sum(W2.*W2))));
+
+%cost for sparsity
+sparsityCost = 0;
+for j=1:size(H,1)
+    sparsityCost = sparsityCost + (sparsityParam*log(sparsityParam/P_avgActivation(j,1))) + ((1-sparsityParam)*log((1-sparsityParam)/(1-P_avgActivation(j,1))));
+end
+%total cost
+cost = (LMS/size(data,2)) + (lambda*0.5*(sum(sum(W1.*W1))+sum(sum(W2.*W2)))) + beta*sparsityCost;
 
 W2grad = (W2grad/size(data,2)) + (lambda*W2);
 b2grad = b2grad/size(data,2);

@@ -20,7 +20,7 @@ sparsityParam = 0.01;   % desired average activation of the hidden units.
                      % (This was denoted by the Greek alphabet rho, which looks like a lower-case "p",
 		     %  in the lecture notes). 
 lambda = 0.0001;     % weight decay parameter       
-beta = 0;%3;            % weight of sparsity penalty term       
+beta = 3;            % weight of sparsity penalty term       
 
 %%======================================================================
 %% STEP 1: Implement sampleIMAGES
@@ -104,6 +104,7 @@ theta = initializeParameters(hiddenSize, visibleSize);
 
 %  Use minFunc to minimize the function
 addpath minFunc/
+addpath(genpath('/Users/tejaskulkarni/Documents/PROJECTS/DeepLearning/SparseAutoEncoder/minFunc'));
 options.Method = 'lbfgs'; % Here, we use L-BFGS to optimize our cost
                           % function. Generally, for minFunc to work, you
                           % need a function pointer with two outputs: the
